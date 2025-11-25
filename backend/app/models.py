@@ -49,6 +49,7 @@ class InspectionRecord(Base):
     numeric_value = Column(Float, nullable=True)
     photo_url = Column(String(1000), nullable=True)
     comment = Column(Text, nullable=True)
+    reported_by = Column(String(200), nullable=True)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
     equipment = relationship("Equipment", back_populates="inspections")

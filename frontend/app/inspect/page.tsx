@@ -82,10 +82,8 @@ export default function InspectPage() {
     <div className="container">
       <div className="card">
         <h1>点検実施（モバイル向け）</h1>
-        <label>
-          equipment_id（QRから読み取ったID）
-          <input value={equipmentId} onChange={(e) => setEquipmentId(e.target.value)} />
-        </label>
+        <label htmlFor="equipment-id-input">equipment_id（QRから読み取ったID）</label>
+        <input id="equipment-id-input" name="equipment_id" inputMode="numeric" placeholder="例: 1" aria-label="設備ID" value={equipmentId} onChange={(e) => setEquipmentId(e.target.value)} />
         <div style={{ marginTop: 8 }}>
           <button className="btn btn-primary" onClick={loadTemplate}>テンプレート読み込み</button>
         </div>

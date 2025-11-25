@@ -46,8 +46,13 @@ def get_templates_for_type(db: Session, equipment_type: str) -> List[models.Chec
     return db.query(models.CheckTemplate).filter(models.CheckTemplate.equipment_type == equipment_type).order_by(models.CheckTemplate.order_index).all()
 
 
-def create_inspection(db: Session, rec: schemas.InspectionRecordCreate) -> models.InspectionRecord:
-    obj = models.InspectionRecord(**rec.dict())
+def create_inspection(db: Session, rec) -> models.InspectionRecord:
+    # rec may be a Pydantic model or a dict. Normalize to dict before creating.
+    if hasattr(rec, 'dict'):
+        data = rec.dict()
+    else:
+        data = dict(rec)
+    obj = models.InspectionRecord(**data)
     db.add(obj)
     db.commit()
     db.refresh(obj)

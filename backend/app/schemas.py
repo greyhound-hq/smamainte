@@ -44,11 +44,13 @@ class InspectionRecordCreate(BaseModel):
     numeric_value: Optional[float]
     photo_url: Optional[str]
     comment: Optional[str]
+    reported_by: Optional[str]
 
 
 class InspectionRecordOut(InspectionRecordCreate):
     id: int
     timestamp: Optional[datetime]
+    reported_by: Optional[str]
 
     class Config:
         orm_mode = True

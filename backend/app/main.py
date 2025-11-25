@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Header
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -8,6 +8,7 @@ from .config import settings
 from .qrcode_utils import generate_qr_png_bytes
 from .storage import upload_bytes, generate_v4_put_object_signed_url
 import io
+from .auth import get_current_user
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -94,8 +95,15 @@ def get_templates(equipment_type: str, db: Session = Depends(get_db)):
 
 # Inspection record
 @app.post("/inspections", response_model=schemas.InspectionRecordOut)
-def create_inspection(rec: schemas.InspectionRecordCreate, db: Session = Depends(get_db)):
-    return crud.create_inspection(db, rec)
+def create_inspection(rec: schemas.InspectionRecordCreate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    # current_user may be a dev fallback. Persist reporter identity when available.
+    data = rec.dict()
+    try:
+        if current_user and isinstance(current_user, dict) and current_user.get('uid'):
+            data['reported_by'] = current_user.get('uid')
+    except Exception:
+        pass
+    return crud.create_inspection(db, data)
 
 
 @app.get("/inspections/{equipment_id}", response_model=list[schemas.InspectionRecordOut])
