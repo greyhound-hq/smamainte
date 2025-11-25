@@ -15,18 +15,21 @@ if ROOT not in sys.path:
 os.environ.setdefault('GCS_BUCKET', 'test-bucket')
 os.environ.setdefault('DATABASE_URL', 'sqlite:///:memory:')
 
-# Ensure the app package can be imported
-from app.main import app
+# Import models first so we can create test DB/tables before app imports DB engine
 from app.models import Base
-from app.db import get_db
 
-TEST_DATABASE_URL = "sqlite:///:memory:"
+# Use a file-backed SQLite for tests to avoid separate in-memory connections issues
+TEST_DATABASE_URL = os.environ.get('TEST_DATABASE_URL', 'sqlite:///./test_db.sqlite')
 
 engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# create tables
+# create tables on the test engine before importing the app to ensure tables exist
 Base.metadata.create_all(bind=engine)
+
+# Now import the FastAPI app and the real get_db so we can override it
+from app.main import app
+from app.db import get_db
 
 
 def override_get_db():
