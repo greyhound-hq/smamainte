@@ -25,7 +25,7 @@ jobs:
       - name: Ensure admin check script is executable
         run: chmod +x backend/scripts/check_admin_endpoints.sh
 
-      - name: Start backend (uvicorn) in background
+      - name: Start backend (uvicorn) in background and capture logs
         env:
           DATABASE_URL: sqlite:///./test_ci.sqlite
           GCS_BUCKET: test-bucket
@@ -33,23 +33,49 @@ jobs:
           ADMIN_UIDS: dev-faketoke
         run: |
           nohup uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
-          # wait for /health to be available
+          echo "Started uvicorn, pid=$!" > uvicorn.pid
+          # wait for /health to be available with retries
           n=0
           until curl -sSf http://localhost:8000/health >/dev/null; do
             n=$((n+1))
-            if [ $n -gt 30 ]; then echo "uvicorn failed to start"; cat uvicorn.log; exit 1; fi
+            echo "waiting for backend to be healthy... attempt=$n" >> uvicorn.log
+            if [ $n -gt 60 ]; then echo "uvicorn failed to start after $n attempts"; cat uvicorn.log; exit 1; fi
             sleep 1
           done
+          echo "backend healthy"
 
-      - name: Run admin endpoint checks
+      - name: Run admin endpoint checks (capture output)
         env:
           BASE_URL: http://localhost:8000
           TEST_TOKEN: faketoken1234
-        run: bash backend/scripts/check_admin_endpoints.sh
+        run: |
+          set -o pipefail
+          bash backend/scripts/check_admin_endpoints.sh > admin_check.log 2>&1 || {
+            echo "admin checks failed, printing admin_check.log"; cat admin_check.log; exit 1;
+          }
 
-      - name: Run backend pytest
+      - name: Run backend pytest (capture output)
         env:
           DATABASE_URL: sqlite:///./test_ci.sqlite
           GCS_BUCKET: test-bucket
           ADMIN_UIDS: dev-faketoke
-        run: pytest -q backend/tests
+        run: |
+          set -o pipefail
+          pytest -q backend/tests 2>&1 | tee pytest.log
+          rc=${PIPESTATUS[0]}
+          if [ $rc -ne 0 ]; then
+            echo "pytest failed with exit code $rc"; exit $rc
+          fi
+
+      - name: Upload logs and artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-verify-logs
+          path: |
+            uvicorn.log
+            uvicorn.pid
+            admin_check.log
+            pytest.log
+
+      - name: Show log files (short listing)
+        run: ls -la uvicorn.log admin_check.log pytest.log || true
