@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     PROJECT_ID: str = ""
     SECRET_KEY: str = "changeme"
     ALLOW_ORIGINS: str = "*"
+    # Comma-separated admin identifiers (emails or UIDs). Use one of these to allow admin-only operations.
+    ADMIN_EMAILS: str = ""
+    ADMIN_UIDS: str = ""
 
     class Config:
         env_file = ".env"

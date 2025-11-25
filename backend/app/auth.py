@@ -2,6 +2,8 @@ import os
 import json
 from typing import Optional
 from fastapi import Header, HTTPException
+from fastapi import Depends
+from .config import settings
 
 try:
     import firebase_admin
@@ -64,3 +66,32 @@ def get_current_user(authorization: Optional[str] = Header(None)) -> Optional[di
     if token:
         return {'uid': f'dev-{token[:8]}'}
     return {'uid': 'dev-anonymous'}
+
+
+def _is_admin_user(user: dict) -> bool:
+    """Check whether the provided user dict is considered admin.
+
+    This checks `settings.ADMIN_EMAILS` and `settings.ADMIN_UIDS` (comma-separated).
+    """
+    if not user:
+        return False
+    admin_emails = [e.strip().lower() for e in (settings.ADMIN_EMAILS or "").split(',') if e.strip()]
+    admin_uids = [u.strip() for u in (settings.ADMIN_UIDS or "").split(',') if u.strip()]
+    email = user.get('email')
+    uid = user.get('uid')
+    if email and email.lower() in admin_emails:
+        return True
+    if uid and uid in admin_uids:
+        return True
+    return False
+
+
+def require_admin(authorization: Optional[str] = Header(None)) -> dict:
+    """Dependency to require an admin user. Raises 403 if not admin.
+
+    Use this in FastAPI endpoints as `Depends(require_admin)`.
+    """
+    user = get_current_user(authorization)
+    if not _is_admin_user(user):
+        raise HTTPException(status_code=403, detail='Admin privileges required')
+    return user

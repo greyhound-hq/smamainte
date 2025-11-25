@@ -8,7 +8,7 @@ from .config import settings
 from .qrcode_utils import generate_qr_png_bytes
 from .storage import upload_bytes, generate_v4_put_object_signed_url
 import io
-from .auth import get_current_user
+from .auth import get_current_user, require_admin
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -30,7 +30,7 @@ def health():
 
 # Equipment APIs
 @app.post("/equipments", response_model=schemas.EquipmentOut)
-def create_equipment(eq: schemas.EquipmentCreate, db: Session = Depends(get_db)):
+def create_equipment(eq: schemas.EquipmentCreate, db: Session = Depends(get_db), _admin: dict = Depends(require_admin)):
     return crud.create_equipment(db, eq)
 
 
@@ -48,7 +48,7 @@ def get_equipment(equipment_id: int, db: Session = Depends(get_db)):
 
 
 @app.put("/equipments/{equipment_id}", response_model=schemas.EquipmentOut)
-def update_equipment(equipment_id: int, payload: dict, db: Session = Depends(get_db)):
+def update_equipment(equipment_id: int, payload: dict, db: Session = Depends(get_db), _admin: dict = Depends(require_admin)):
     obj = crud.get_equipment(db, equipment_id)
     if not obj:
         raise HTTPException(status_code=404, detail="Not found")
@@ -56,7 +56,7 @@ def update_equipment(equipment_id: int, payload: dict, db: Session = Depends(get
 
 
 @app.delete("/equipments/{equipment_id}")
-def delete_equipment(equipment_id: int, db: Session = Depends(get_db)):
+def delete_equipment(equipment_id: int, db: Session = Depends(get_db), _admin: dict = Depends(require_admin)):
     obj = crud.get_equipment(db, equipment_id)
     if not obj:
         raise HTTPException(status_code=404, detail="Not found")
@@ -66,7 +66,7 @@ def delete_equipment(equipment_id: int, db: Session = Depends(get_db)):
 
 # QR generation: generate PNG and upload to GCS, set qr_code_url
 @app.post("/equipments/{equipment_id}/generate_qr")
-def generate_qr(equipment_id: int, db: Session = Depends(get_db)):
+def generate_qr(equipment_id: int, db: Session = Depends(get_db), _admin: dict = Depends(require_admin)):
     eq = crud.get_equipment(db, equipment_id)
     if not eq:
         raise HTTPException(status_code=404, detail="equipment not found")
@@ -84,7 +84,7 @@ def generate_qr(equipment_id: int, db: Session = Depends(get_db)):
 
 # Check template CRUD
 @app.post("/templates", response_model=schemas.CheckTemplateOut)
-def create_template(t: schemas.CheckTemplateBase, db: Session = Depends(get_db)):
+def create_template(t: schemas.CheckTemplateBase, db: Session = Depends(get_db), _admin: dict = Depends(require_admin)):
     return crud.create_template(db, t)
 
 
@@ -123,7 +123,7 @@ class UploadRequest(BaseModel):
 
 
 @app.post("/upload-url")
-def create_upload_url(req: UploadRequest):
+def create_upload_url(req: UploadRequest, _admin: dict = Depends(require_admin)):
     blob_name = f"uploads/{req.filename}"
     url = generate_v4_put_object_signed_url(settings.GCS_BUCKET, blob_name)
     public_url = f"https://storage.googleapis.com/{settings.GCS_BUCKET}/{blob_name}"
