@@ -35,9 +35,17 @@ const BASE = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   const outPath = path.join(process.cwd(), 'a11y-results.json');
   fs.writeFileSync(outPath, JSON.stringify(results, null, 2));
   console.log('Saved results to', outPath);
-  // print summary
+  // print summary and fail CI if there are any violations
+  let totalViolations = 0;
   for (const [p, r] of Object.entries(results)) {
-    if (r && r.violations) console.log(p, 'violations:', r.violations.length);
+    const count = r && r.violations ? r.violations.length : 0;
+    console.log(p, 'violations:', count);
+    totalViolations += count;
   }
+  if (totalViolations > 0) {
+    console.error(`A11Y: ${totalViolations} violations found — failing CI.`);
+    process.exit(1);
+  }
+  console.log('A11Y: no violations found');
   process.exit(0);
 })();
