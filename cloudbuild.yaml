@@ -1,0 +1,11 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/simple-cmms-backend', '.' ]
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'push', 'gcr.io/$PROJECT_ID/simple-cmms-backend' ]
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args: [ 'run', 'deploy', 'simple-cmms-backend', '--image', 'gcr.io/$PROJECT_ID/simple-cmms-backend', '--region', 'us-central1', '--platform', 'managed', '--allow-unauthenticated', '--update-env-vars', 'DATABASE_URL=$DATABASE_URL,GCS_BUCKET=$GCS_BUCKET' ]
+
+options:
+  substitution_option: ALLOW_LOOSE

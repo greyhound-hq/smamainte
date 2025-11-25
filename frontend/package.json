@@ -1,0 +1,24 @@
+{
+  "name": "simple-cmms-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "a11y": "node frontend/scripts/a11y.js"
+  },
+  "dependencies": {
+    "next": "14.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "firebase": "10.10.0",
+    "swr": "2.2.0",
+    "axios": "1.4.0"
+  },
+  "devDependencies": {
+    "puppeteer": "^21.4.0",
+    "axe-core": "^4.7.3",
+    "wait-on": "^6.0.1"
+  }
+}

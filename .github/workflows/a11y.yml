@@ -1,0 +1,47 @@
+name: a11y-check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  run-a11y:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend deps
+        working-directory: ./frontend
+        run: |
+          npm ci
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: |
+          npm run build
+
+      - name: Start frontend
+        working-directory: ./frontend
+        run: |
+          # start in background
+          nohup npm run start &
+          # wait for server
+          npx wait-on http://localhost:3000
+
+      - name: Run a11y script
+        working-directory: ./frontend
+        env:
+          NEXT_PUBLIC_BASE_URL: http://localhost:3000
+        run: |
+          node scripts/a11y.js
+
+      - name: Upload a11y results
+        uses: actions/upload-artifact@v4
+        with:
+          name: a11y-results
+          path: frontend/a11y-results.json

@@ -1,0 +1,93 @@
+
+:root{
+  --bg: #f7f8fa;
+  --card: #ffffff;
+  --muted: #54565a; /* darker for contrast */
+  --accent: #044e46; /* deeper accent for contrast */
+  --accent-strong: #013d36;
+  --danger: #b91c1c; /* darker red */
+  --focus: #ffcc00; /* visible focus ring color */
+}
+
+html, body, #__next {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  background: var(--bg);
+  color: #0f172a; /* strong body color */
+  -webkit-font-smoothing:antialiased;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.app-header{
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--card);
+  border-bottom: 1px solid #e6e9ee;
+  padding: 10px 16px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.app-title{ font-size:17px; font-weight:700; margin:0 }
+.app-nav{ margin-left:auto; display:flex; gap:10px; align-items:center }
+.app-nav a{ color:var(--accent-strong); text-decoration:none; font-size:15px; padding:6px 8px; border-radius:8px }
+.app-nav a:hover, .app-nav a:focus{ background:rgba(4,78,70,0.06); outline: none }
+
+.container { max-width: 900px; margin: 0 auto; padding: 14px 16px }
+
+.card{
+  background: var(--card);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 2px 6px rgba(15,23,42,0.06);
+}
+
+.item-card{ border: 1px solid #e6e9ee; border-radius:8px; padding:12px; background:#fff }
+
+/* Buttons */
+.btn{ display:inline-block; padding:12px 16px; border-radius:10px; font-weight:700; cursor:pointer; border:none; min-height:44px; box-sizing:border-box }
+.btn-primary{ background:var(--accent); color:white; box-shadow: 0 1px 0 rgba(0,0,0,0.04) }
+.btn-ghost{ background:transparent; color:var(--accent-strong); border:1px solid rgba(4,78,70,0.08) }
+.btn-danger{ background:var(--danger); color:white }
+.btn:focus-visible{ outline:3px solid var(--focus); outline-offset:2px }
+
+/* Form controls */
+input[type="text"], input[type="number"], textarea, select { width:100%; box-sizing:border-box; padding:12px; border-radius:10px; border:1px solid #e6e9ee; font-size:16px; background: #fff }
+textarea{ min-height:88px }
+
+/* improved focus for form controls */
+input:focus-visible, textarea:focus-visible, select:focus-visible { outline:3px solid var(--focus); outline-offset:2px }
+
+input[type="file"]{ width:100% }
+
+img.responsive{ max-width:100%; height:auto; border-radius:8px }
+
+.kpi-row{ display:flex; gap:14px; flex-wrap:wrap }
+.kpi{ flex:1; min-width:140px; background:linear-gradient(180deg,#ffffff,#fbfdfd); border-radius:12px; padding:14px; text-align:center; border:1px solid #eef2f5 }
+.kpi .val{ font-size:22px; font-weight:800; color:var(--accent-strong) }
+.kpi .label{ color:var(--muted); font-size:13px }
+
+.inspect-item{ margin-bottom:14px }
+
+/* mobile-friendly spacing */
+@media (max-width: 600px){
+  .container{ padding:12px }
+  .app-title{ font-size:16px }
+  .btn{ width:100%; padding:14px }
+  .app-nav{ gap:6px }
+  .kpi{ min-width:140px }
+}
+
+/* accessibility helpers */
+.sr-only{ position: absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0 }
+
+/* reduce motion for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce){
+  * { transition: none !important; animation: none !important }
+}
+
