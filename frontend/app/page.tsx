@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import useSWR from 'swr'
+import { useSWR } from 'swr'
 import axios from 'axios'
 
 const fetcher = (url: string) => axios.get(url).then(r => r.data)
