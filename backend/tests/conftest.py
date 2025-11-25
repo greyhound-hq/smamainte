@@ -11,6 +11,10 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+# Provide minimal env defaults for tests so pydantic Settings validation passes in CI
+os.environ.setdefault('GCS_BUCKET', 'test-bucket')
+os.environ.setdefault('DATABASE_URL', 'sqlite:///:memory:')
+
 # Ensure the app package can be imported
 from app.main import app
 from app.models import Base
