@@ -3,8 +3,8 @@
 Minimal CMMS skeleton for small manufacturers.
 
 Folders:
-- `backend`: FastAPI app
-- `frontend`: Next.js (App Router) UI
+
+<!-- ci-trigger: update to force GitHub Actions rerun -->
 
 See `.env.example` for required environment variables.
 
