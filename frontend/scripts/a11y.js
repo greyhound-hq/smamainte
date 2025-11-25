@@ -7,7 +7,7 @@ const PAGES = ['/', '/inspect', '/equipments', '/admin'];
 const BASE = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
 (async () => {
-  const browser = await puppeteer.launch({ args: ['--no-sandbox','--disable-setuid-sandbox'] });
+  const browser = await puppeteer.launch({ args: ['--no-sandbox','--disable-setuid-sandbox'], headless: 'new' });
   const results = {};
   for (const p of PAGES) {
     const url = new URL(p, BASE).toString();
@@ -31,7 +31,8 @@ const BASE = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     }
   }
   await browser.close();
-  const outPath = path.join(process.cwd(), 'frontend', 'a11y-results.json');
+  // Write results to current working directory (CI runs this script from frontend/)
+  const outPath = path.join(process.cwd(), 'a11y-results.json');
   fs.writeFileSync(outPath, JSON.stringify(results, null, 2));
   console.log('Saved results to', outPath);
   // print summary
