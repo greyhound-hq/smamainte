@@ -4,7 +4,7 @@ Minimal CMMS skeleton for small manufacturers.
 
 ## Documentation
 
-- **[Firebase Setup Guide](FIREBASE_SETUP.md)** - Authentication configuration for production
+- **[Supabase Setup Guide](SUPABASE_SETUP.md)** - Authentication and database configuration
 - See `.env.example` for required environment variables
 
 Quick run (backend):

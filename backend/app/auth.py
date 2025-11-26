@@ -1,71 +1,45 @@
 import os
-import json
+import jwt
 from typing import Optional
 from fastapi import Header, HTTPException
 from fastapi import Depends
 from .config import settings
 
-try:
-    import firebase_admin
-    from firebase_admin import auth as firebase_auth, credentials
-    FIREBASE_AVAILABLE = True
-except Exception:
-    firebase_admin = None
-    firebase_auth = None
-    credentials = None
-    FIREBASE_AVAILABLE = False
-
-
-_initialized = False
-
-
-def _init_firebase_admin():
-    global _initialized
-    if _initialized:
-        return
-    cred_json = os.environ.get('FIREBASE_ADMIN_CREDENTIALS_JSON')
-    cred_path = os.environ.get('FIREBASE_ADMIN_CREDENTIALS_PATH')
-    try:
-        if cred_json and firebase_admin and credentials:
-            data = json.loads(cred_json)
-            cred = credentials.Certificate(data)
-            firebase_admin.initialize_app(cred)
-            _initialized = True
-        elif cred_path and firebase_admin and credentials:
-            cred = credentials.Certificate(cred_path)
-            firebase_admin.initialize_app(cred)
-            _initialized = True
-    except Exception:
-        # don't block startup if admin credentials are not provided
-        _initialized = False
-
 
 def get_current_user(authorization: Optional[str] = Header(None)) -> Optional[dict]:
-    """Verify Firebase ID token from Authorization header (Bearer <token>).
+    """Verify Supabase JWT token from Authorization header (Bearer <token>).
 
-    If `FIREBASE_ADMIN_CREDENTIALS_JSON` or `FIREBASE_ADMIN_CREDENTIALS_PATH` env var is set,
-    the token will be verified using the Admin SDK. Otherwise this returns a development user.
+    If `SUPABASE_JWT_SECRET` env var is set, the token will be verified.
+    Otherwise this returns a development user.
     """
     token = None
     if authorization and authorization.startswith('Bearer '):
         token = authorization.split(' ', 1)[1].strip()
 
-    if FIREBASE_AVAILABLE:
+    jwt_secret = os.environ.get('SUPABASE_JWT_SECRET')
+    
+    if jwt_secret and token:
         try:
-            _init_firebase_admin()
-            if _initialized and token:
-                decoded = firebase_auth.verify_id_token(token)
-                return {
-                    'uid': decoded.get('uid'),
-                    'email': decoded.get('email')
-                }
-        except Exception:
+            # Verify Supabase JWT token
+            decoded = jwt.decode(
+                token,
+                jwt_secret,
+                algorithms=['HS256'],
+                audience='authenticated'
+            )
+            return {
+                'uid': decoded.get('sub'),
+                'email': decoded.get('email')
+            }
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail='Token expired')
+        except jwt.InvalidTokenError:
             raise HTTPException(status_code=401, detail='Invalid auth token')
 
     # Fallback for development: if token present, return a pseudo-user; otherwise anonymous dev user
     if token:
-        return {'uid': f'dev-{token[:8]}'}
-    return {'uid': 'dev-anonymous'}
+        return {'uid': f'dev-{token[:8]}', 'email': None}
+    return {'uid': 'dev-anonymous', 'email': None}
 
 
 def _is_admin_user(user: dict) -> bool:

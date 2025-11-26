@@ -34,20 +34,17 @@ export default function InspectPage() {
 
   async function handleFileSelect(itemId: number, file: File) {
     if (!file) return
-    const filename = `inspection_${equipmentId}_${itemId}_${Date.now()}.jpg`
+    const timestamp = Date.now()
+    const filePath = `inspections/${equipmentId}/${timestamp}_${itemId}.jpg`
+    
     try {
-      const r = await axios.post('/api/upload-url', { filename })
-      const { upload_url, public_url } = r.data
-      // PUT the file to signed URL
-      await fetch(upload_url, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type || 'application/octet-stream' },
-        body: file,
-      })
-      setResponses(prev => ({ ...prev, [itemId]: { ...prev[itemId], photo_url: public_url } }))
+      // Import uploadFile dynamically to avoid server-side issues
+      const { uploadFile } = await import('../../lib/supabaseClient')
+      const publicUrl = await uploadFile('inspection-images', filePath, file)
+      setResponses(prev => ({ ...prev, [itemId]: { ...prev[itemId], photo_url: publicUrl } }))
     } catch (e) {
       console.error(e)
-      alert('写真アップロードに失敗しました')
+      alert('写真アップロードに失敗しました: ' + String(e))
     }
   }
 
