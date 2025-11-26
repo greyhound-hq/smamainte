@@ -31,6 +31,9 @@ jobs:
           GCS_BUCKET: test-bucket
           # dev fallback admin uid for TEST_TOKEN=faketoken1234 -> dev-faketoke
           ADMIN_UIDS: dev-faketoke
+          # For production: uncomment and add GitHub Secrets
+          # FIREBASE_ADMIN_CREDENTIALS_JSON: ${{ secrets.FIREBASE_ADMIN_CREDENTIALS_JSON }}
+          # ADMIN_EMAILS: ${{ secrets.ADMIN_EMAILS }}
         run: |
           nohup uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
           echo "Started uvicorn, pid=$!" > uvicorn.pid
@@ -59,6 +62,9 @@ jobs:
           DATABASE_URL: sqlite:///./test_ci.sqlite
           GCS_BUCKET: test-bucket
           ADMIN_UIDS: dev-faketoke
+          # For production: uncomment and add GitHub Secrets
+          # FIREBASE_ADMIN_CREDENTIALS_JSON: ${{ secrets.FIREBASE_ADMIN_CREDENTIALS_JSON }}
+          # ADMIN_EMAILS: ${{ secrets.ADMIN_EMAILS }}
         run: |
           set -o pipefail
           pytest -q backend/tests 2>&1 | tee pytest.log

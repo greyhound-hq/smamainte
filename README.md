@@ -2,11 +2,10 @@
 
 Minimal CMMS skeleton for small manufacturers.
 
-Folders:
+## Documentation
 
-<!-- ci-trigger: update to force GitHub Actions rerun -->
-
-See `.env.example` for required environment variables.
+- **[Firebase Setup Guide](FIREBASE_SETUP.md)** - Authentication configuration for production
+- See `.env.example` for required environment variables
 
 Quick run (backend):
 
