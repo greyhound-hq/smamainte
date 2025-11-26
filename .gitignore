@@ -1,1 +1,9 @@
 .venv/
+backend/venv/
+node_modules/
+.env
+.next/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
