@@ -30,6 +30,7 @@ Base.metadata.create_all(bind=engine)
 # Now import the FastAPI app and the real get_db so we can override it
 from app.main import app
 from app.db import get_db
+from app.auth import require_admin
 
 
 def override_get_db():
@@ -39,8 +40,15 @@ def override_get_db():
     finally:
         db.close()
 
-# override the dependency in the FastAPI app
+
+def override_require_admin():
+    """Mock admin dependency for tests - always returns a valid admin user."""
+    return {"uid": "test-admin-uid", "email": "test@example.com"}
+
+
+# override the dependencies in the FastAPI app
 app.dependency_overrides[get_db] = override_get_db
+app.dependency_overrides[require_admin] = override_require_admin
 
 
 @pytest.fixture()
